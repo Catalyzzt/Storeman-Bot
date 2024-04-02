@@ -3,7 +3,7 @@ import { getCollections } from '../mongoDB';
 import checkPermissions from "../Utils/checkPermissions";
 import generateMsg from '../Utils/generateStockpileMsg'
 
-const spsetlogichannel = async (interaction: ChatInputCommandInteraction, client: Client): Promise<boolean> => {
+const spaddlogichannel = async (interaction: ChatInputCommandInteraction, client: Client): Promise<boolean> => {
     try {
         const channel = interaction.options.getChannel("channel")! // Tell typescript to shut up and it is non-null
 
@@ -100,7 +100,7 @@ const spsetlogichannel = async (interaction: ChatInputCommandInteraction, client
 
 
         await interaction.editReply({
-            content: "Logi channel successfully set to '" + channel.name + "'",
+            content: "Logi channel '" + channel.name + "' added successfully",
         });
         
     }
@@ -110,4 +110,4 @@ const spsetlogichannel = async (interaction: ChatInputCommandInteraction, client
     return true;
 }
 
-export default spsetlogichannel
+export default spaddlogichannel

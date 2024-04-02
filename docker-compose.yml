@@ -5,7 +5,8 @@ services:
     build: .
     image: ghcr.io/tkaixiang/storeman-bot:latest
     restart: unless-stopped
-    network_mode: "host" 
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/storeman
     secrets:
       - source: dotenv
         target: /app/.env

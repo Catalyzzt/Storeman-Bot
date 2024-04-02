@@ -7,7 +7,7 @@ import spstatus from "./Commands/spstatus";
 import spsettarget from "./Commands/spsettarget";
 import spremovetarget from "./Commands/spremovetarget";
 import spsetpassword from "./Commands/spsetpassword";
-import spsetlogichannel from "./Commands/spsetlogichannel";
+import spaddlogichannel from "./Commands/spaddlogichannel";
 import spremovelogichannel from "./Commands/spremovelogichannel";
 import NodeCache from "node-cache";
 import spremovestockpile from "./Commands/spremovestockpile";
@@ -77,7 +77,7 @@ const commandMapping: any = {
   splogichannel: {
     sub: true,
     handler: {
-      set: { func: spsetlogichannel, vars: 2 },
+      add: { func: spaddlogichannel, vars: 2 },
       remove: { func: spremovelogichannel, vars: 2 },
     },
   },
