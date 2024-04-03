@@ -66,10 +66,6 @@ const editStockpileMsg = async (currentMsg: string | [string, ActionRowBuilder<B
 const newStockpileMsg = async (currentMsg: string | [string, ActionRowBuilder<ButtonBuilder>], configObj: any, channelObj: TextChannel): Promise<Boolean> => {
 
     try {
-        // The issue here is that when adding a new stockpile, a new msg has to be sent
-        // Unfortunately, it takes a long time to send that new msg, hence when 2 requests to add the same new stockpile happen
-        // The 1st request wouldn't have updated the database that a new msg has already been sent, leading to another new msg being sent
-        // and the 2nd request's configObj.stockpileMsgs overrides the 1st one
         let newMsg: any;
         if (typeof currentMsg !== "string") newMsg = await channelObj.send({ content: currentMsg[0], components: [currentMsg[1]] })
         else newMsg = await channelObj.send(currentMsg)
@@ -87,7 +83,7 @@ const newStockpileMsg = async (currentMsg: string | [string, ActionRowBuilder<Bu
 
 const editTargetMsg = async (currentMsg: string, msgObj: Message) => {
     try {
-        await msgObj.edit(currentMsg)
+        await msgObj.edit({ content: currentMsg })
     }
     catch (e) {
         console.log(e)
@@ -112,7 +108,7 @@ const deleteTargetMsg = async (channelObj: TextChannel, currentMsgID: string) =>
     }
 }
 
-const updateStockpileMsg = async (client: Client, guildID: string | null, msg: [string, Array<string>, Array<string>, string, ActionRowBuilder<ButtonBuilder>]): Promise<Boolean> => {
+const updateStockpileMsg = async (client: Client, guildID: string | null, channelID: string, msg: [string, Array<string>, Array<string>, string, ActionRowBuilder<ButtonBuilder>]): Promise<Boolean> => {
     let channelObj = null
     try {
         const collections = process.env.STOCKPILER_MULTI_SERVER === "true" ? getCollections(guildID) : getCollections()
@@ -120,8 +116,9 @@ const updateStockpileMsg = async (client: Client, guildID: string | null, msg: [
         const configObj = (await collections.config.findOne({}))!
 
         // update msg if logi channel is set
-        if ("channelId" in configObj) {
-            channelObj = client.channels.cache.get(configObj.channelId) as TextChannel
+        if (configObj.channels && configObj.channels[channelID]) {
+            channelObj = client.channels.cache.get(channelID) as TextChannel
+            
             let msgObj: Message;
             try {
                 msgObj = await channelObj.messages.fetch(configObj.stockpileHeader)
