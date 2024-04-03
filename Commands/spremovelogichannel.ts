@@ -14,13 +14,13 @@ const spremovelogichannel = async (interaction: ChatInputCommandInteraction, cli
     }
 
     const collections = process.env.STOCKPILER_MULTI_SERVER === "true" ? getCollections(interaction.guildId) : getCollections();
-    const configDoc = (await collections.config.findOne({}))!;
+    const configObj = (await collections.config.findOne({}))!;
 
     if (!(await checkPermissions(interaction, "admin", interaction.member as GuildMember))) return false;
 
     // Check if the specified channel is configured
-    if (configDoc.channels && configDoc.channels[channel.id]) {
-        const channelConfig = configDoc.channels[channel.id];
+    if (configObj.channels && configObj.channels[channel.id]) {
+        const channelConfig = configObj.channels[channel.id];
         const channelObj = client.channels.cache.get(channel.id) as TextChannel;
 
         // Delete messages based on the stored IDs in the channel's config

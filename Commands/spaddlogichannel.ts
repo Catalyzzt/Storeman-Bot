@@ -21,9 +21,9 @@ const spaddlogichannel = async (interaction: ChatInputCommandInteraction, client
         const collections = process.env.STOCKPILER_MULTI_SERVER === "true" ? getCollections(interaction.guildId) : getCollections()
         const channelObj = client.channels.cache.get(channel.id) as TextChannel
 
-        const configDoc = (await collections.config.findOne({}))!
-        if (configDoc.channels && configDoc.channels[channel.id]) {
-            const channelConfig = configDoc.channels[channel.id];
+        const configObj = (await collections.config.findOne({}))!
+        if (configObj.channels && configObj.channels[channel.id]) {
+            const channelConfig = configObj.channels[channel.id];
             const newChannelObj = client.channels.cache.get(channel.id) as TextChannel;
         
             // Attempt to delete the stockpile messages header
