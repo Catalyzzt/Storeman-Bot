@@ -108,7 +108,8 @@ const timerBP = [60 * 5, 60 * 10, 60 * 30, 60 * 60, 60 * 60 * 6, 60 * 60 * 12]; 
 declare global {
   var NodeCacheObj: NodeCache;
 }
-
+// By putting this here we ensure commands are initalized every time the bot is launched. Should be removed on final build
+insertCommands();
 const updateFirstTimeSetup = async (newInstance: boolean): Promise<void> => {
   // Run first-time setup
   const collections = getCollections();

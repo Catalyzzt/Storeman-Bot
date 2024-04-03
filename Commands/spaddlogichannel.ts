@@ -22,50 +22,60 @@ const spaddlogichannel = async (interaction: ChatInputCommandInteraction, client
         const channelObj = client.channels.cache.get(channel.id) as TextChannel
 
         const configDoc = (await collections.config.findOne({}))!
-        if ("stockpileHeader" in configDoc) {
-            // Delete previous message if it exists
-            const newChannelObj = client.channels.cache.get(configDoc.channelId) as TextChannel
+        if (configDoc.channels && configDoc.channels[channel.id]) {
+            const channelConfig = configDoc.channels[channel.id];
+            const newChannelObj = client.channels.cache.get(channel.id) as TextChannel;
+        
+            // Attempt to delete the stockpile messages header
             try {
-                const msg = await newChannelObj.messages.fetch(configDoc.stockpileMsgsHeader)
-                await msg.delete()
+                const msg = await newChannelObj.messages.fetch(channelConfig.stockpileMsgsHeader);
+                await msg.delete();
+                console.log("stockpileMsgsHeader deleted successfully");
+            } catch (e) {
+                console.log("Failed to delete stockpileMsgsHeader:", e);
             }
-            catch (e) {
-                console.log("Failed to delete stockpileMsgsHeader")
-            }
+        
+            // Attempt to delete the stockpile header message
             try {
-                const msg = await newChannelObj.messages.fetch(configDoc.stockpileHeader)
-                await msg.delete()
+                const msg = await newChannelObj.messages.fetch(channelConfig.stockpileHeader);
+                await msg.delete();
+                console.log("stockpile header msg deleted successfully");
+            } catch (e) {
+                console.log("Failed to delete stockpile header msg:", e);
             }
-            catch (e) {
-                console.log("Failed to delete stockpile header msg")
-            }
-            for (let i = 0; i < configDoc.stockpileMsgs.length; i++) {
+        
+            // Attempt to delete stockpile messages
+            for (let i = 0; i < channelConfig.stockpileMsgs.length; i++) {
                 try {
-                    const stockpileMsg = await newChannelObj.messages.fetch(configDoc.stockpileMsgs[i])
-                    if (stockpileMsg) await stockpileMsg.delete()
-                }
-                catch (e) {
-                    console.log("Failed to delete msg")
+                    const stockpileMsg = await newChannelObj.messages.fetch(channelConfig.stockpileMsgs[i]);
+                    await stockpileMsg.delete();
+                    console.log("stockpileMsg deleted successfully");
+                } catch (e) {
+                    console.log("Failed to delete stockpileMsg:", e);
                 }
             }
-
-            for (let i = 0; i < configDoc.targetMsg.length; i++) {
+        
+            // Attempt to delete target messages
+            for (let i = 0; i < channelConfig.targetMsg.length; i++) {
                 try {
-                    const targetMsgObj = await newChannelObj.messages.fetch(configDoc.targetMsg[i])
-                    if (targetMsgObj) await targetMsgObj.delete()
-                }
-                catch (e) {
-                    console.log("Failed to delete target msg")
+                    const targetMsg = await newChannelObj.messages.fetch(channelConfig.targetMsg[i]);
+                    await targetMsg.delete();
+                    console.log("targetMsg deleted successfully");
+                } catch (e) {
+                    console.log("Failed to delete targetMsg:", e);
                 }
             }
-
+        
+            // Attempt to delete the refreshAll message
             try {
-                const refreshAllID = await newChannelObj.messages.fetch(configDoc.refreshAllID)
-                if (refreshAllID) await refreshAllID.delete()
+                const refreshAllID = await newChannelObj.messages.fetch(channelConfig.refreshAllID);
+                await refreshAllID.delete();
+                console.log("refreshAll msg deleted successfully");
+            } catch (e) {
+                console.log("Failed to delete refreshAll msg:", e);
             }
-            catch (e) {
-                console.log("Failed to delete refreshAll msg")
-            }
+        } else {
+            console.log("No existing messages for this channel to delete.");
         }
         const [stockpileHeader, stockpileMsgs, targetMsg, stockpileMsgsHeader, refreshAll] = await generateMsg(false, interaction.guildId)
         const newMsg = await channelObj.send(stockpileHeader)
@@ -96,9 +106,19 @@ const spaddlogichannel = async (interaction: ChatInputCommandInteraction, client
             targetMsgIDs.push(targetMsgID.id)
         }
 
-        await collections.config.updateOne({}, { $set: { stockpileHeader: newMsg.id, stockpileMsgs: stockpileMsgIDs, targetMsg: targetMsgIDs, channelId: channel.id, stockpileMsgsHeader: stockpileMsgsHeaderID.id, refreshAllID: refreshAllID.id } })
-
-
+        await collections.config.updateOne(
+            {}, 
+            { 
+                $set: { 
+                    [`channels.${channel.id}.stockpileHeader`]: newMsg.id,
+                    [`channels.${channel.id}.stockpileMsgs`]: stockpileMsgIDs,
+                    [`channels.${channel.id}.targetMsg`]: targetMsgIDs,
+                    [`channels.${channel.id}.stockpileMsgsHeader`]: stockpileMsgsHeaderID.id,
+                    [`channels.${channel.id}.refreshAllID`]: refreshAllID.id
+                } 
+            }
+        )
+        
         await interaction.editReply({
             content: "Logi channel '" + channel.name + "' added successfully",
         });
